@@ -298,6 +298,42 @@
             cursor: pointer;
             font-weight: bold;
         }
+
+        /* Tooltip styles */
+        .itabs-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-5px);
+            z-index: 1000;
+        }
+
+        .itabs-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .itabs-button-wrapper:hover .itabs-tooltip {
+            opacity: 1;
+        }
+
+        .itabs-button-wrapper {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -459,7 +495,7 @@
     <script>
         // ============ LOCALSTORAGE MEMORY ============
         
-        let autoplayEnabled = true; // Default to Yes
+        let autoplayEnabled = true;
         
         function loadSavedData() {
             const saved = localStorage.getItem('kickstarterItabsData');
@@ -478,7 +514,6 @@
                     if (data.howWorks) document.getElementById('howWorks').value = data.howWorks;
                     if (data.whatDifferent) document.getElementById('whatDifferent').value = data.whatDifferent;
                     
-                    // Load slideshow settings
                     if (data.autoplayEnabled !== undefined) {
                         autoplayEnabled = data.autoplayEnabled;
                         setAutoplay(autoplayEnabled);
@@ -494,7 +529,6 @@
                     }
                     if (data.overlayColor) document.getElementById('overlayColor').value = data.overlayColor;
                     
-                    // Load image URLs
                     if (data.imageUrls && data.imageUrls.length > 0) {
                         const container = document.getElementById('imageUrlsContainer');
                         container.innerHTML = '';
@@ -668,7 +702,6 @@
             loadingText.textContent = 'Fetching campaign page...';
             
             try {
-                // Step 1: Fetch the page with ScrapingBee
                 loadingText.textContent = 'Fetching campaign page...';
                 const scrapingUrl = `https://app.scrapingbee.com/api/v1/?api_key=${scrapingbeeKey}&url=${encodeURIComponent(campaignUrl)}&render_js=false`;
                 
@@ -677,13 +710,11 @@
                 
                 const htmlContent = await pageResponse.text();
                 
-                // Step 2: Extract text content
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlContent, 'text/html');
                 const textContent = doc.body.textContent || doc.body.innerText || '';
                 const cleanText = textContent.replace(/\s+/g, ' ').substring(0, 8000);
                 
-                // Step 3: Generate descriptions with Gemini
                 loadingText.textContent = 'Generating descriptions with AI...';
                 
                 const prompt = `You are analyzing a Kickstarter campaign for: "${productName}"
@@ -807,10 +838,13 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                         <div style="position: absolute; top: 20px; right: 20px; width: 45px; height: 45px; background: rgba(255,255,255,0.95); color: #05CE78; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border: 3px solid white; z-index: 20;" onclick="document.getElementById('previewPopup').style.display='flex'">i</div>
                     </div>
                     <div style="padding: 25px; text-align: center; position: relative;">
-                        <a href="${generatorUrl}" target="_blank" style="position: absolute; top: 12px; right: 15px; width: 35px; height: 35px; background: rgba(255, 255, 255, 0.95); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 2px solid #05CE78; transition: all 0.3s ease;">
-                            <div style="color: #05CE78; font-size: 14px; font-weight: bold; line-height: 1; margin-bottom: 1px;">i</div>
-                            <div style="color: #05CE78; font-size: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1;">iTabs</div>
-                        </a>
+                        <div class="itabs-button-wrapper" style="position: absolute; top: 12px; right: 15px;">
+                            <div class="itabs-tooltip">Create your own iTabs</div>
+                            <div onclick="showItabsInfo(event)" style="width: 35px; height: 35px; background: rgba(255, 255, 255, 0.95); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 2px solid #05CE78; transition: all 0.3s ease; cursor: pointer;">
+                                <div style="color: #05CE78; font-size: 14px; font-weight: bold; line-height: 1; margin-bottom: 1px;">i</div>
+                                <div style="color: #05CE78; font-size: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1;">iTabs</div>
+                            </div>
+                        </div>
                         <h3 style="font-size: 1.3em; color: #2d3748; margin-bottom: 10px; font-weight: 600;">${productName}</h3>
                         <p style="color: #718096; font-size: 1em; line-height: 1.6;">Swipe to see more • Click i for details</p>
                     </div>
@@ -828,6 +862,20 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                         </div>
                     </div>
                 </div>
+                
+                <div id="itabsInfoPopup" style="display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; padding: 20px;">
+                    <div style="position: relative; background-color: white; border-radius: 20px; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, #05CE78 0%, #00A862 100%); color: white; padding: 25px; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="margin: 0; font-size: 1.5em;">✨ This uses iTabs</h3>
+                            <button onclick="document.getElementById('itabsInfoPopup').style.display='none'" style="color: white; font-size: 35px; font-weight: bold; cursor: pointer; background: none; border: none; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+                        </div>
+                        <div style="padding: 30px;">
+                            <p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 25px;">This interactive display was created with iTabs - making campaigns easy to understand with clickable explanations.</p>
+                            <p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 25px;"><strong>Want to create iTabs for your campaign?</strong></p>
+                            <button onclick="window.open('${generatorUrl}', '_blank')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #05CE78 0%, #00A862 100%); color: white; border: none; border-radius: 12px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(5,206,120,0.3);">Create Your Own iTabs →</button>
+                        </div>
+                    </div>
+                </div>
             `;
             
             document.getElementById('livePreview').innerHTML = previewHTML;
@@ -837,6 +885,12 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             setupCarousel(images.length);
         }
         
+        function showItabsInfo(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('itabsInfoPopup').style.display = 'flex';
+        }
+        
         let currentSlide = 0;
         let totalSlides = 1;
         
@@ -844,7 +898,6 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             currentSlide = 0;
             totalSlides = total;
             
-            // Clear any existing autoplay
             if (window.carouselInterval) {
                 clearInterval(window.carouselInterval);
             }
@@ -881,7 +934,6 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                 });
             }
             
-            // Add autoplay if enabled and multiple images
             if (autoplayEnabled && totalSlides > 1) {
                 const speed = document.getElementById('autoplaySpeed').value || 5;
                 window.carouselInterval = setInterval(() => {
@@ -975,11 +1027,14 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             code += '        <div style="position: absolute; top: 20px; right: 20px; width: 45px; height: 45px; background: rgba(255,255,255,0.95); color: #05CE78; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border: 3px solid white; z-index: 20;" onclick="document.getElementById(\'itabsPopup\').style.display=\'flex\'">i</div>\n';
             code += '    </div>\n';
             code += '    <div style="padding: 25px; text-align: center; position: relative;">\n';
-            code += '        <!-- FREE VERSION: Remove this <a> tag for paid version -->\n';
-            code += `        <a href="${generatorUrl}" target="_blank" style="position: absolute; top: 12px; right: 15px; width: 35px; height: 35px; background: rgba(255, 255, 255, 0.95); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 2px solid #05CE78;">\n`;
-            code += '            <div style="color: #05CE78; font-size: 14px; font-weight: bold; line-height: 1; margin-bottom: 1px;">i</div>\n';
-            code += '            <div style="color: #05CE78; font-size: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1;">iTabs</div>\n';
-            code += '        </a>\n';
+            code += '        <!-- FREE VERSION: iTabs Button with Tooltip and Info Popup -->\n';
+            code += '        <div style="position: absolute; top: 12px; right: 15px;">\n';
+            code += '            <div onclick="document.getElementById(\'itabsInfoPopup\').style.display=\'flex\'" onmouseenter="this.querySelector(\'.itabs-tooltip\').style.opacity=\'1\'" onmouseleave="this.querySelector(\'.itabs-tooltip\').style.opacity=\'0\'" style="width: 35px; height: 35px; background: rgba(255, 255, 255, 0.95); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 2px solid #05CE78; transition: all 0.3s ease; cursor: pointer; position: relative;">\n';
+            code += '                <div class="itabs-tooltip" style="position: absolute; background: rgba(0, 0, 0, 0.9); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.3s; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-5px); z-index: 1000;">Create your own iTabs</div>\n';
+            code += '                <div style="color: #05CE78; font-size: 14px; font-weight: bold; line-height: 1; margin-bottom: 1px;">i</div>\n';
+            code += '                <div style="color: #05CE78; font-size: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1;">iTabs</div>\n';
+            code += '            </div>\n';
+            code += '        </div>\n';
             code += `        <h3 style="font-size: 1.3em; color: #2d3748; margin-bottom: 10px; font-weight: 600;">${productName}</h3>\n`;
             code += '        <p style="color: #718096; font-size: 1em; line-height: 1.6;">Swipe to see more • Click i for details</p>\n';
             code += '    </div>\n';
@@ -993,6 +1048,20 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             code += '        <div style="padding: 35px; max-height: calc(80vh - 120px); overflow-y: auto;">\n';
             code += popupHTML;
             code += buttonHTML;
+            code += '        </div>\n';
+            code += '    </div>\n';
+            code += '</div>\n\n';
+            code += '<!-- iTabs Info Popup -->\n';
+            code += '<div id="itabsInfoPopup" style="display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; padding: 20px;">\n';
+            code += '    <div style="position: relative; background-color: white; border-radius: 20px; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); overflow: hidden;">\n';
+            code += '        <div style="background: linear-gradient(135deg, #05CE78 0%, #00A862 100%); color: white; padding: 25px; display: flex; justify-content: space-between; align-items: center;">\n';
+            code += '            <h3 style="margin: 0; font-size: 1.5em;">✨ This uses iTabs</h3>\n';
+            code += '            <button onclick="document.getElementById(\'itabsInfoPopup\').style.display=\'none\'" style="color: white; font-size: 35px; font-weight: bold; cursor: pointer; background: none; border: none; width: 35px; height: 35px;">&times;</button>\n';
+            code += '        </div>\n';
+            code += '        <div style="padding: 30px;">\n';
+            code += '            <p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 25px;">This interactive display was created with iTabs - making campaigns easy to understand with clickable explanations.</p>\n';
+            code += '            <p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 25px;"><strong>Want to create iTabs for your campaign?</strong></p>\n';
+            code += `            <button onclick="window.open('${generatorUrl}', '_blank')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #05CE78 0%, #00A862 100%); color: white; border: none; border-radius: 12px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(5,206,120,0.3);">Create Your Own iTabs →</button>\n`;
             code += '        </div>\n';
             code += '    </div>\n';
             code += '</div>\n\n';
@@ -1035,8 +1104,10 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             code += 'document.getElementById(\'itabsPopup\').addEventListener(\'click\', function(e) {\n';
             code += '    if (e.target.id === \'itabsPopup\') this.style.display = \'none\';\n';
             code += '});\n';
+            code += 'document.getElementById(\'itabsInfoPopup\').addEventListener(\'click\', function(e) {\n';
+            code += '    if (e.target.id === \'itabsInfoPopup\') this.style.display = \'none\';\n';
+            code += '});\n';
             
-            // Add autoplay if enabled
             if (autoplayEnabled && images.length > 1) {
                 const speed = document.getElementById('autoplaySpeed').value || 5;
                 code += '\n// Auto-advance slideshow\n';
@@ -1064,7 +1135,6 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                     btn.textContent = '📋 Copy Code';
                 }, 2000);
             }).catch(err => {
-                // Fallback method
                 const textarea = document.createElement('textarea');
                 textarea.value = code;
                 textarea.style.position = 'fixed';
@@ -1084,7 +1154,6 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             });
         }
         
-        // Load saved data on page load
         window.addEventListener('DOMContentLoaded', loadSavedData);
     </script>
 </body>
