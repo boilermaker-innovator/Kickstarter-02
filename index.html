@@ -359,35 +359,43 @@
             </div>
             
             <!-- Descriptions Section -->
-            <div class="form-section">
-                <div class="section-title">💬 Campaign Information</div>
-                
-                <p class="helper-text">Edit AI-generated content or write your own</p>
-                
-                <label>What is it?</label>
-                <textarea id="whatIsIt" placeholder="AI will generate this..." oninput="autoSave()"></textarea>
-                
-                <label>Why back this project?</label>
-                <textarea id="whyNeedIt" placeholder="AI will generate this..." oninput="autoSave()"></textarea>
-                
-                <label>How does it work?</label>
-                <textarea id="howWorks" placeholder="AI will generate this..." oninput="autoSave()"></textarea>
-                
-                <label>What makes it special?</label>
-                <textarea id="whatDifferent" placeholder="AI will generate this..." oninput="autoSave()"></textarea>
-            </div>
-            
-            <!-- Settings Section -->
-            <div class="form-section">
-                <div class="section-title">⚙️ Settings</div>
-                
-                <label>Campaign Button Text</label>
-                <input type="text" id="buttonText" placeholder="Back This Project" value="Back This Project" oninput="autoSave()">
-                
-                <label>Your iTabs Generator URL</label>
-                <input type="url" id="generatorUrl" placeholder="https://your-generator-url.com" value="https://yourgeneratorurl.com" oninput="autoSave()">
-                <p class="helper-text">Where the small iTabs button links to (viral marketing!)</p>
-            </div>
+            // ============ SLIDESHOW SETTINGS ============
+
+let autoplayEnabled = true; // Default to Yes
+
+function setAutoplay(enabled) {
+    autoplayEnabled = enabled;
+    const yesBtn = document.getElementById('autoplayYes');
+    const noBtn = document.getElementById('autoplayNo');
+    
+    if (enabled) {
+        yesBtn.style.background = 'linear-gradient(135deg, #05CE78 0%, #00A862 100%)';
+        yesBtn.style.color = 'white';
+        yesBtn.style.border = 'none';
+        noBtn.style.background = 'white';
+        noBtn.style.color = '#05CE78';
+        noBtn.style.border = '2px solid #e2e8f0';
+    } else {
+        yesBtn.style.background = 'white';
+        yesBtn.style.color = '#05CE78';
+        yesBtn.style.border = '2px solid #e2e8f0';
+        noBtn.style.background = 'linear-gradient(135deg, #05CE78 0%, #00A862 100%)';
+        noBtn.style.color = 'white';
+        noBtn.style.border = 'none';
+    }
+    
+    autoSave();
+}
+
+function updateSpeedDisplay() {
+    const speed = document.getElementById('autoplaySpeed').value;
+    document.getElementById('speedDisplay').textContent = speed + ' seconds';
+}
+
+function updateSizeDisplay() {
+    const size = document.getElementById('overlaySize').value;
+    document.getElementById('sizeDisplay').textContent = size + 'px';
+}
             
             <!-- Action Buttons -->
             <button class="update-btn" onclick="updatePreview()">👁️ Update Live Preview</button>
