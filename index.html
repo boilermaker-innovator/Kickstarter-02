@@ -310,6 +310,7 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s;
+            top: auto;
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%) translateY(-5px);
@@ -556,7 +557,6 @@
                     if (data.howWorks) document.getElementById('howWorks').value = data.howWorks;
                     if (data.whatDifferent) document.getElementById('whatDifferent').value = data.whatDifferent;
                     
-                    // Load funding stats
                     if (data.currentFunding) document.getElementById('currentFunding').value = data.currentFunding;
                     if (data.fundingGoal) document.getElementById('fundingGoal').value = data.fundingGoal;
                     if (data.backersCount) document.getElementById('backersCount').value = data.backersCount;
@@ -842,7 +842,6 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             const overlaySize = document.getElementById('overlaySize').value || '30';
             const overlayColor = document.getElementById('overlayColor').value || '#FFFFFF';
             
-            // Get funding stats
             const currentFunding = document.getElementById('currentFunding').value;
             const fundingGoal = document.getElementById('fundingGoal').value;
             const backersCount = document.getElementById('backersCount').value;
@@ -870,10 +869,8 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                 dotsHTML += `<div class="preview-dot" data-slide="${index}" style="width: 10px; height: 10px; border-radius: 50%; background: ${bgColor}; cursor: pointer; transition: all 0.3s; border: 2px solid white;"></div>`;
             });
             
-            // Build funding stats HTML
             let fundingStatsHTML = '';
             if (currentFunding && fundingGoal) {
-                // Calculate percentage
                 const current = parseFloat(currentFunding.replace(/[^0-9.]/g, ''));
                 const goal = parseFloat(fundingGoal.replace(/[^0-9.]/g, ''));
                 const percentage = Math.min(Math.round((current / goal) * 100), 100);
@@ -924,7 +921,7 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                         <div style="position: absolute; top: 20px; right: 20px; width: 45px; height: 45px; background: rgba(255,255,255,0.95); color: #05CE78; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border: 3px solid white; z-index: 20;" onclick="document.getElementById('previewPopup').style.display='flex'">i</div>
                     </div>
                     <div style="padding: 25px; text-align: center; position: relative;">
-                        <div class="itabs-button-wrapper" style="position: absolute; top: 12px; right: 15px;">
+                        <div class="itabs-button-wrapper" style="position: absolute; bottom: 12px; right: 15px;">
                             <div class="itabs-tooltip">Create your own iTabs</div>
                             <div onclick="showItabsInfo(event)" style="width: 35px; height: 35px; background: rgba(255, 255, 255, 0.95); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 2px solid #05CE78; transition: all 0.3s ease; cursor: pointer;">
                                 <div style="color: #05CE78; font-size: 14px; font-weight: bold; line-height: 1; margin-bottom: 1px;">i</div>
@@ -1074,7 +1071,6 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             const overlaySize = document.getElementById('overlaySize').value || '30';
             const overlayColor = document.getElementById('overlayColor').value || '#FFFFFF';
             
-            // Get funding stats
             const currentFunding = escapeHtml(document.getElementById('currentFunding').value);
             const fundingGoal = escapeHtml(document.getElementById('fundingGoal').value);
             const backersCount = escapeHtml(document.getElementById('backersCount').value);
@@ -1093,7 +1089,6 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                 dotsHTML += `        <div class="itabs-dot" data-slide="${index}" style="width: 10px; height: 10px; border-radius: 50%; background: ${bgColor}; cursor: pointer; transition: all 0.3s; border: 2px solid white;"></div>\n`;
             });
             
-            // Build funding stats HTML for code
             let fundingStatsHTML = '';
             if (currentFunding && fundingGoal) {
                 const current = parseFloat(currentFunding.replace(/[^0-9.]/g, ''));
@@ -1148,8 +1143,8 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             code += '        <div style="position: absolute; top: 20px; right: 20px; width: 45px; height: 45px; background: rgba(255,255,255,0.95); color: #05CE78; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border: 3px solid white; z-index: 20;" onclick="document.getElementById(\'itabsPopup\').style.display=\'flex\'">i</div>\n';
             code += '    </div>\n';
             code += '    <div style="padding: 25px; text-align: center; position: relative;">\n';
-            code += '        <!-- FREE VERSION: iTabs Button with Tooltip and Info Popup -->\n';
-            code += '        <div style="position: absolute; top: 12px; right: 15px;">\n';
+            code += '        <!-- FREE VERSION: iTabs Button (Bottom Right) -->\n';
+            code += '        <div style="position: absolute; bottom: 12px; right: 15px;">\n';
             code += '            <div onclick="document.getElementById(\'itabsInfoPopup\').style.display=\'flex\'" onmouseenter="this.querySelector(\'.itabs-tooltip\').style.opacity=\'1\'" onmouseleave="this.querySelector(\'.itabs-tooltip\').style.opacity=\'0\'" style="width: 35px; height: 35px; background: rgba(255, 255, 255, 0.95); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 2px solid #05CE78; transition: all 0.3s ease; cursor: pointer; position: relative;">\n';
             code += '                <div class="itabs-tooltip" style="position: absolute; background: rgba(0, 0, 0, 0.9); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.3s; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-5px); z-index: 1000;">Create your own iTabs</div>\n';
             code += '                <div style="color: #05CE78; font-size: 14px; font-weight: bold; line-height: 1; margin-bottom: 1px;">i</div>\n';
@@ -1279,4 +1274,3 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
     </script>
 </body>
 </html>
-
