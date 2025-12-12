@@ -102,6 +102,7 @@
         
         input[type="text"],
         input[type="url"],
+        input[type="color"],
         textarea {
             width: 100%;
             padding: 12px 15px;
@@ -111,6 +112,11 @@
             margin-bottom: 20px;
             transition: border-color 0.3s;
             font-family: inherit;
+        }
+        
+        input[type="color"] {
+            height: 50px;
+            cursor: pointer;
         }
         
         input:focus,
@@ -358,44 +364,66 @@
                 <button type="button" onclick="addImageUrlField()" style="width: 100%; padding: 10px; background: white; border: 2px solid #05CE78; color: #05CE78; border-radius: 8px; font-weight: 600; cursor: pointer;">+ Add Another Image (Max 5)</button>
             </div>
             
+            <!-- Slideshow Settings Section -->
+            <div class="form-section">
+                <div class="section-title">⚙️ Slideshow Settings</div>
+                
+                <label>Enable Auto-Play Slideshow?</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button type="button" id="autoplayYes" onclick="setAutoplay(true)" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #05CE78 0%, #00A862 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✅ Yes (Recommended)</button>
+                    <button type="button" id="autoplayNo" onclick="setAutoplay(false)" style="flex: 1; padding: 12px; background: white; color: #05CE78; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ No</button>
+                </div>
+                
+                <label>Auto-Play Speed</label>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <input type="range" id="autoplaySpeed" min="2" max="10" value="5" oninput="updateSpeedDisplay(); autoSave()" style="flex: 1;">
+                    <span id="speedDisplay" style="min-width: 80px; font-weight: 600; color: #05CE78;">5 seconds</span>
+                </div>
+                
+                <label>Overlay Text (optional - appears on first image)</label>
+                <input type="text" id="overlayText" placeholder="e.g., 'Now Live on Kickstarter!' - Leave empty for no text" oninput="autoSave()" onchange="updatePreview()">
+                <p class="helper-text">Leave blank if you don't want any text on your images</p>
+                
+                <label>Text Size</label>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <input type="range" id="overlaySize" min="12" max="60" value="30" oninput="updateSizeDisplay(); autoSave()" style="flex: 1;">
+                    <span id="sizeDisplay" style="min-width: 60px; font-weight: 600; color: #05CE78;">30px</span>
+                </div>
+                
+                <label>Text Color</label>
+                <input type="color" id="overlayColor" value="#FFFFFF" onchange="updatePreview(); autoSave()" style="width: 100%; height: 50px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; margin-bottom: 20px;">
+            </div>
+            
             <!-- Descriptions Section -->
-            // ============ SLIDESHOW SETTINGS ============
-
-let autoplayEnabled = true; // Default to Yes
-
-function setAutoplay(enabled) {
-    autoplayEnabled = enabled;
-    const yesBtn = document.getElementById('autoplayYes');
-    const noBtn = document.getElementById('autoplayNo');
-    
-    if (enabled) {
-        yesBtn.style.background = 'linear-gradient(135deg, #05CE78 0%, #00A862 100%)';
-        yesBtn.style.color = 'white';
-        yesBtn.style.border = 'none';
-        noBtn.style.background = 'white';
-        noBtn.style.color = '#05CE78';
-        noBtn.style.border = '2px solid #e2e8f0';
-    } else {
-        yesBtn.style.background = 'white';
-        yesBtn.style.color = '#05CE78';
-        yesBtn.style.border = '2px solid #e2e8f0';
-        noBtn.style.background = 'linear-gradient(135deg, #05CE78 0%, #00A862 100%)';
-        noBtn.style.color = 'white';
-        noBtn.style.border = 'none';
-    }
-    
-    autoSave();
-}
-
-function updateSpeedDisplay() {
-    const speed = document.getElementById('autoplaySpeed').value;
-    document.getElementById('speedDisplay').textContent = speed + ' seconds';
-}
-
-function updateSizeDisplay() {
-    const size = document.getElementById('overlaySize').value;
-    document.getElementById('sizeDisplay').textContent = size + 'px';
-}
+            <div class="form-section">
+                <div class="section-title">💬 Campaign Information</div>
+                
+                <p class="helper-text">Edit AI-generated content or write your own</p>
+                
+                <label>What is it?</label>
+                <textarea id="whatIsIt" placeholder="AI will generate this..." oninput="autoSave()"></textarea>
+                
+                <label>Why back this project?</label>
+                <textarea id="whyNeedIt" placeholder="AI will generate this..." oninput="autoSave()"></textarea>
+                
+                <label>How does it work?</label>
+                <textarea id="howWorks" placeholder="AI will generate this..." oninput="autoSave()"></textarea>
+                
+                <label>What makes it special?</label>
+                <textarea id="whatDifferent" placeholder="AI will generate this..." oninput="autoSave()"></textarea>
+            </div>
+            
+            <!-- Other Settings Section -->
+            <div class="form-section">
+                <div class="section-title">🔧 Other Settings</div>
+                
+                <label>Campaign Button Text</label>
+                <input type="text" id="buttonText" placeholder="Back This Project" value="Back This Project" oninput="autoSave()">
+                
+                <label>Your iTabs Generator URL</label>
+                <input type="url" id="generatorUrl" placeholder="https://your-generator-url.com" value="https://yourgeneratorurl.com" oninput="autoSave()">
+                <p class="helper-text">Where the small iTabs button links to (viral marketing!)</p>
+            </div>
             
             <!-- Action Buttons -->
             <button class="update-btn" onclick="updatePreview()">👁️ Update Live Preview</button>
@@ -431,6 +459,8 @@ function updateSizeDisplay() {
     <script>
         // ============ LOCALSTORAGE MEMORY ============
         
+        let autoplayEnabled = true; // Default to Yes
+        
         function loadSavedData() {
             const saved = localStorage.getItem('kickstarterItabsData');
             if (saved) {
@@ -447,6 +477,22 @@ function updateSizeDisplay() {
                     if (data.whyNeedIt) document.getElementById('whyNeedIt').value = data.whyNeedIt;
                     if (data.howWorks) document.getElementById('howWorks').value = data.howWorks;
                     if (data.whatDifferent) document.getElementById('whatDifferent').value = data.whatDifferent;
+                    
+                    // Load slideshow settings
+                    if (data.autoplayEnabled !== undefined) {
+                        autoplayEnabled = data.autoplayEnabled;
+                        setAutoplay(autoplayEnabled);
+                    }
+                    if (data.autoplaySpeed) {
+                        document.getElementById('autoplaySpeed').value = data.autoplaySpeed;
+                        updateSpeedDisplay();
+                    }
+                    if (data.overlayText) document.getElementById('overlayText').value = data.overlayText;
+                    if (data.overlaySize) {
+                        document.getElementById('overlaySize').value = data.overlaySize;
+                        updateSizeDisplay();
+                    }
+                    if (data.overlayColor) document.getElementById('overlayColor').value = data.overlayColor;
                     
                     // Load image URLs
                     if (data.imageUrls && data.imageUrls.length > 0) {
@@ -489,6 +535,11 @@ function updateSizeDisplay() {
                 howWorks: document.getElementById('howWorks').value,
                 whatDifferent: document.getElementById('whatDifferent').value,
                 imageUrls: imageUrls,
+                autoplayEnabled: autoplayEnabled,
+                autoplaySpeed: document.getElementById('autoplaySpeed').value,
+                overlayText: document.getElementById('overlayText').value,
+                overlaySize: document.getElementById('overlaySize').value,
+                overlayColor: document.getElementById('overlayColor').value,
                 lastSaved: new Date().toISOString()
             };
             
@@ -515,6 +566,42 @@ function updateSizeDisplay() {
             saveTimeout = setTimeout(() => {
                 saveFormData();
             }, 3000);
+        }
+        
+        // ============ SLIDESHOW SETTINGS ============
+        
+        function setAutoplay(enabled) {
+            autoplayEnabled = enabled;
+            const yesBtn = document.getElementById('autoplayYes');
+            const noBtn = document.getElementById('autoplayNo');
+            
+            if (enabled) {
+                yesBtn.style.background = 'linear-gradient(135deg, #05CE78 0%, #00A862 100%)';
+                yesBtn.style.color = 'white';
+                yesBtn.style.border = 'none';
+                noBtn.style.background = 'white';
+                noBtn.style.color = '#05CE78';
+                noBtn.style.border = '2px solid #e2e8f0';
+            } else {
+                yesBtn.style.background = 'white';
+                yesBtn.style.color = '#05CE78';
+                yesBtn.style.border = '2px solid #e2e8f0';
+                noBtn.style.background = 'linear-gradient(135deg, #05CE78 0%, #00A862 100%)';
+                noBtn.style.color = 'white';
+                noBtn.style.border = 'none';
+            }
+            
+            autoSave();
+        }
+        
+        function updateSpeedDisplay() {
+            const speed = document.getElementById('autoplaySpeed').value;
+            document.getElementById('speedDisplay').textContent = speed + ' seconds';
+        }
+        
+        function updateSizeDisplay() {
+            const size = document.getElementById('overlaySize').value;
+            document.getElementById('sizeDisplay').textContent = size + 'px';
         }
         
         // ============ IMAGE URL MANAGEMENT ============
@@ -590,11 +677,11 @@ function updateSizeDisplay() {
                 
                 const htmlContent = await pageResponse.text();
                 
-                // Step 2: Extract text content (remove HTML tags)
+                // Step 2: Extract text content
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlContent, 'text/html');
                 const textContent = doc.body.textContent || doc.body.innerText || '';
-                const cleanText = textContent.replace(/\s+/g, ' ').substring(0, 8000); // Limit to 8000 chars
+                const cleanText = textContent.replace(/\s+/g, ' ').substring(0, 8000);
                 
                 // Step 3: Generate descriptions with Gemini
                 loadingText.textContent = 'Generating descriptions with AI...';
@@ -635,15 +722,6 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                         document.getElementById('howWorks').value = content.howWorks || '';
                         document.getElementById('whatDifferent').value = content.whatDifferent || '';
                         
-                        // Auto-fill button URL if empty
-                        if (!document.getElementById('buttonUrl')) {
-                            const buttonUrlInput = document.createElement('input');
-                            buttonUrlInput.type = 'hidden';
-                            buttonUrlInput.id = 'buttonUrl';
-                            buttonUrlInput.value = campaignUrl;
-                            document.body.appendChild(buttonUrlInput);
-                        }
-                        
                         autoSave();
                         updatePreview();
                         
@@ -677,6 +755,9 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             const buttonText = document.getElementById('buttonText').value || 'Back This Project';
             const campaignUrl = document.getElementById('campaignUrl').value;
             const generatorUrl = document.getElementById('generatorUrl').value || 'https://yourgeneratorurl.com';
+            const overlayText = document.getElementById('overlayText').value || '';
+            const overlaySize = document.getElementById('overlaySize').value || '30';
+            const overlayColor = document.getElementById('overlayColor').value || '#FFFFFF';
             
             const imageInputs = document.querySelectorAll('.image-url');
             const images = Array.from(imageInputs)
@@ -692,6 +773,7 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                 slidesHTML += `
                     <div style="min-width: 100%; height: 100%;">
                         <img src="${url}" alt="${productName} ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;">
+                        ${index === 0 && overlayText ? `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: ${overlayColor}; font-weight: bold; font-size: ${overlaySize}px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); padding: 10px; z-index: 10; text-align: center; width: 90%;">${overlayText}</div>` : ''}
                     </div>
                 `;
                 
@@ -762,6 +844,11 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             currentSlide = 0;
             totalSlides = total;
             
+            // Clear any existing autoplay
+            if (window.carouselInterval) {
+                clearInterval(window.carouselInterval);
+            }
+            
             const dots = document.querySelectorAll('.preview-dot');
             dots.forEach((dot, index) => {
                 dot.addEventListener('click', () => {
@@ -792,6 +879,16 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                         updateCarousel();
                     }
                 });
+            }
+            
+            // Add autoplay if enabled and multiple images
+            if (autoplayEnabled && totalSlides > 1) {
+                const speed = document.getElementById('autoplaySpeed').value || 5;
+                window.carouselInterval = setInterval(() => {
+                    currentSlide++;
+                    if (currentSlide >= totalSlides) currentSlide = 0;
+                    updateCarousel();
+                }, speed * 1000);
             }
         }
         
@@ -835,12 +932,19 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             const buttonText = escapeHtml(document.getElementById('buttonText').value || 'Back This Project');
             const campaignUrl = document.getElementById('campaignUrl').value;
             const generatorUrl = document.getElementById('generatorUrl').value || 'https://yourgeneratorurl.com';
+            const overlayText = escapeHtml(document.getElementById('overlayText').value || '');
+            const overlaySize = document.getElementById('overlaySize').value || '30';
+            const overlayColor = document.getElementById('overlayColor').value || '#FFFFFF';
             
             let slidesHTML = '';
             let dotsHTML = '';
             
             images.forEach((url, index) => {
-                slidesHTML += `        <div style="min-width: 100%; height: 100%;">\n            <img src="${url}" alt="${productName} ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;">\n        </div>\n`;
+                slidesHTML += `        <div style="min-width: 100%; height: 100%;">\n            <img src="${url}" alt="${productName} ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;">\n`;
+                if (index === 0 && overlayText) {
+                    slidesHTML += `            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: ${overlayColor}; font-weight: bold; font-size: ${overlaySize}px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); padding: 10px; z-index: 10; text-align: center; width: 90%;">${overlayText}</div>\n`;
+                }
+                slidesHTML += '        </div>\n';
                 const bgColor = index === 0 ? 'white' : 'rgba(255,255,255,0.5)';
                 dotsHTML += `        <div class="itabs-dot" data-slide="${index}" style="width: 10px; height: 10px; border-radius: 50%; background: ${bgColor}; cursor: pointer; transition: all 0.3s; border: 2px solid white;"></div>\n`;
             });
@@ -931,6 +1035,18 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             code += 'document.getElementById(\'itabsPopup\').addEventListener(\'click\', function(e) {\n';
             code += '    if (e.target.id === \'itabsPopup\') this.style.display = \'none\';\n';
             code += '});\n';
+            
+            // Add autoplay if enabled
+            if (autoplayEnabled && images.length > 1) {
+                const speed = document.getElementById('autoplaySpeed').value || 5;
+                code += '\n// Auto-advance slideshow\n';
+                code += 'setInterval(function() {\n';
+                code += '    itabsCurrentSlide++;\n';
+                code += '    if (itabsCurrentSlide >= itabsTotalSlides) itabsCurrentSlide = 0;\n';
+                code += '    itabsUpdateCarousel();\n';
+                code += '}, ' + (speed * 1000) + ');\n';
+            }
+            
             code += '<' + '/script>';
             
             document.getElementById('codeOutput').textContent = code;
@@ -938,35 +1054,35 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             document.getElementById('codeSection').scrollIntoView({ behavior: 'smooth' });
         }
         
-       function copyCode() {
-    const code = document.getElementById('codeOutput').textContent;
-    const btn = document.querySelector('.copy-btn');
-    
-    navigator.clipboard.writeText(code).then(() => {
-        btn.textContent = '✅ Copied!';
-        setTimeout(() => {
-            btn.textContent = '📋 Copy Code';
-        }, 2000);
-    }).catch(err => {
-        // Fallback method if clipboard API fails
-        const textarea = document.createElement('textarea');
-        textarea.value = code;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-            document.execCommand('copy');
-            btn.textContent = '✅ Copied!';
-            setTimeout(() => {
-                btn.textContent = '📋 Copy Code';
-            }, 2000);
-        } catch (e) {
-            alert('Copy failed. Please select and copy the code manually.');
+        function copyCode() {
+            const code = document.getElementById('codeOutput').textContent;
+            const btn = document.querySelector('.copy-btn');
+            
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy Code';
+                }, 2000);
+            }).catch(err => {
+                // Fallback method
+                const textarea = document.createElement('textarea');
+                textarea.value = code;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        btn.textContent = '📋 Copy Code';
+                    }, 2000);
+                } catch (e) {
+                    alert('Copy failed. Please select and copy the code manually.');
+                }
+                document.body.removeChild(textarea);
+            });
         }
-        document.body.removeChild(textarea);
-    });
-}
         
         // Load saved data on page load
         window.addEventListener('DOMContentLoaded', loadSavedData);
