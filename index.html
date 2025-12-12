@@ -299,7 +299,6 @@
             font-weight: bold;
         }
 
-        /* Tooltip styles */
         .itabs-tooltip {
             position: absolute;
             background: rgba(0, 0, 0, 0.9);
@@ -333,6 +332,18 @@
 
         .itabs-button-wrapper {
             position: relative;
+        }
+
+        .funding-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .funding-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -378,6 +389,37 @@
                 <button class="ai-btn" id="fetchBtn" onclick="fetchAndGenerateContent()">
                     🤖 Fetch Campaign & Generate Descriptions
                 </button>
+            </div>
+
+            <!-- Funding Stats Section -->
+            <div class="form-section">
+                <div class="section-title">📊 Funding Stats (Optional)</div>
+                
+                <p class="helper-text">Add these to create urgency and social proof</p>
+                
+                <div class="funding-grid">
+                    <div>
+                        <label>Current Funding</label>
+                        <input type="text" id="currentFunding" placeholder="e.g., $45,231" oninput="autoSave()" onchange="updatePreview()">
+                    </div>
+                    
+                    <div>
+                        <label>Funding Goal</label>
+                        <input type="text" id="fundingGoal" placeholder="e.g., $50,000" oninput="autoSave()" onchange="updatePreview()">
+                    </div>
+                    
+                    <div>
+                        <label>Backers Count</label>
+                        <input type="text" id="backersCount" placeholder="e.g., 892 backers" oninput="autoSave()" onchange="updatePreview()">
+                    </div>
+                    
+                    <div>
+                        <label>Days Remaining</label>
+                        <input type="text" id="daysRemaining" placeholder="e.g., 12 days left" oninput="autoSave()" onchange="updatePreview()">
+                    </div>
+                </div>
+                
+                <p class="helper-text" style="margin-top: 10px;">Leave blank if you don't want to show funding stats</p>
             </div>
             
             <!-- Images Section -->
@@ -514,6 +556,12 @@
                     if (data.howWorks) document.getElementById('howWorks').value = data.howWorks;
                     if (data.whatDifferent) document.getElementById('whatDifferent').value = data.whatDifferent;
                     
+                    // Load funding stats
+                    if (data.currentFunding) document.getElementById('currentFunding').value = data.currentFunding;
+                    if (data.fundingGoal) document.getElementById('fundingGoal').value = data.fundingGoal;
+                    if (data.backersCount) document.getElementById('backersCount').value = data.backersCount;
+                    if (data.daysRemaining) document.getElementById('daysRemaining').value = data.daysRemaining;
+                    
                     if (data.autoplayEnabled !== undefined) {
                         autoplayEnabled = data.autoplayEnabled;
                         setAutoplay(autoplayEnabled);
@@ -568,6 +616,10 @@
                 whyNeedIt: document.getElementById('whyNeedIt').value,
                 howWorks: document.getElementById('howWorks').value,
                 whatDifferent: document.getElementById('whatDifferent').value,
+                currentFunding: document.getElementById('currentFunding').value,
+                fundingGoal: document.getElementById('fundingGoal').value,
+                backersCount: document.getElementById('backersCount').value,
+                daysRemaining: document.getElementById('daysRemaining').value,
                 imageUrls: imageUrls,
                 autoplayEnabled: autoplayEnabled,
                 autoplaySpeed: document.getElementById('autoplaySpeed').value,
@@ -790,6 +842,12 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             const overlaySize = document.getElementById('overlaySize').value || '30';
             const overlayColor = document.getElementById('overlayColor').value || '#FFFFFF';
             
+            // Get funding stats
+            const currentFunding = document.getElementById('currentFunding').value;
+            const fundingGoal = document.getElementById('fundingGoal').value;
+            const backersCount = document.getElementById('backersCount').value;
+            const daysRemaining = document.getElementById('daysRemaining').value;
+            
             const imageInputs = document.querySelectorAll('.image-url');
             const images = Array.from(imageInputs)
                 .map(input => input.value.trim())
@@ -812,7 +870,35 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                 dotsHTML += `<div class="preview-dot" data-slide="${index}" style="width: 10px; height: 10px; border-radius: 50%; background: ${bgColor}; cursor: pointer; transition: all 0.3s; border: 2px solid white;"></div>`;
             });
             
-            let popupHTML = '';
+            // Build funding stats HTML
+            let fundingStatsHTML = '';
+            if (currentFunding && fundingGoal) {
+                // Calculate percentage
+                const current = parseFloat(currentFunding.replace(/[^0-9.]/g, ''));
+                const goal = parseFloat(fundingGoal.replace(/[^0-9.]/g, ''));
+                const percentage = Math.min(Math.round((current / goal) * 100), 100);
+                
+                fundingStatsHTML = `
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <div style="text-align: left;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #05CE78;">${currentFunding}</div>
+                                <div style="font-size: 0.9em; color: #718096;">pledged of ${fundingGoal}</div>
+                            </div>
+                            ${backersCount ? `<div style="text-align: right;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #2d3748;">${backersCount.replace(/[^0-9]/g, '')}</div>
+                                <div style="font-size: 0.9em; color: #718096;">backers</div>
+                            </div>` : ''}
+                        </div>
+                        <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin: 15px 0;">
+                            <div style="background: linear-gradient(135deg, #05CE78 0%, #00A862 100%); height: 100%; width: ${percentage}%; transition: width 0.3s;"></div>
+                        </div>
+                        ${daysRemaining ? `<div style="text-align: center; color: #4a5568; font-weight: 600; font-size: 1.05em;">⏰ ${daysRemaining}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            let popupHTML = fundingStatsHTML;
             if (whatIsIt) popupHTML += `<h4 style="color: #05CE78; font-size: 1.4em; margin-bottom: 15px;">What is it?</h4><p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 15px;">${whatIsIt}</p>`;
             if (whyNeedIt) popupHTML += `<h4 style="color: #05CE78; font-size: 1.4em; margin-bottom: 15px; margin-top: 25px;">Why back this?</h4><p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 15px;">${whyNeedIt}</p>`;
             if (howWorks) popupHTML += `<h4 style="color: #05CE78; font-size: 1.4em; margin-bottom: 15px; margin-top: 25px;">How does it work?</h4><p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 15px;">${howWorks}</p>`;
@@ -988,6 +1074,12 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
             const overlaySize = document.getElementById('overlaySize').value || '30';
             const overlayColor = document.getElementById('overlayColor').value || '#FFFFFF';
             
+            // Get funding stats
+            const currentFunding = escapeHtml(document.getElementById('currentFunding').value);
+            const fundingGoal = escapeHtml(document.getElementById('fundingGoal').value);
+            const backersCount = escapeHtml(document.getElementById('backersCount').value);
+            const daysRemaining = escapeHtml(document.getElementById('daysRemaining').value);
+            
             let slidesHTML = '';
             let dotsHTML = '';
             
@@ -1001,7 +1093,36 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
                 dotsHTML += `        <div class="itabs-dot" data-slide="${index}" style="width: 10px; height: 10px; border-radius: 50%; background: ${bgColor}; cursor: pointer; transition: all 0.3s; border: 2px solid white;"></div>\n`;
             });
             
-            let popupHTML = '';
+            // Build funding stats HTML for code
+            let fundingStatsHTML = '';
+            if (currentFunding && fundingGoal) {
+                const current = parseFloat(currentFunding.replace(/[^0-9.]/g, ''));
+                const goal = parseFloat(fundingGoal.replace(/[^0-9.]/g, ''));
+                const percentage = Math.min(Math.round((current / goal) * 100), 100);
+                
+                fundingStatsHTML = `            <div style="background: #f7fafc; padding: 20px; border-radius: 12px; margin-bottom: 25px;">\n`;
+                fundingStatsHTML += `                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">\n`;
+                fundingStatsHTML += `                    <div style="text-align: left;">\n`;
+                fundingStatsHTML += `                        <div style="font-size: 1.8em; font-weight: bold; color: #05CE78;">${currentFunding}</div>\n`;
+                fundingStatsHTML += `                        <div style="font-size: 0.9em; color: #718096;">pledged of ${fundingGoal}</div>\n`;
+                fundingStatsHTML += `                    </div>\n`;
+                if (backersCount) {
+                    fundingStatsHTML += `                    <div style="text-align: right;">\n`;
+                    fundingStatsHTML += `                        <div style="font-size: 1.8em; font-weight: bold; color: #2d3748;">${backersCount.replace(/[^0-9]/g, '')}</div>\n`;
+                    fundingStatsHTML += `                        <div style="font-size: 0.9em; color: #718096;">backers</div>\n`;
+                    fundingStatsHTML += `                    </div>\n`;
+                }
+                fundingStatsHTML += `                </div>\n`;
+                fundingStatsHTML += `                <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin: 15px 0;">\n`;
+                fundingStatsHTML += `                    <div style="background: linear-gradient(135deg, #05CE78 0%, #00A862 100%); height: 100%; width: ${percentage}%;"></div>\n`;
+                fundingStatsHTML += `                </div>\n`;
+                if (daysRemaining) {
+                    fundingStatsHTML += `                <div style="text-align: center; color: #4a5568; font-weight: 600; font-size: 1.05em;">⏰ ${daysRemaining}</div>\n`;
+                }
+                fundingStatsHTML += `            </div>\n\n`;
+            }
+            
+            let popupHTML = fundingStatsHTML;
             if (whatIsIt) popupHTML += `            <h4 style="color: #05CE78; font-size: 1.4em; margin-bottom: 15px;">What is it?</h4>\n            <p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 15px;">${whatIsIt}</p>\n\n`;
             if (whyNeedIt) popupHTML += `            <h4 style="color: #05CE78; font-size: 1.4em; margin-bottom: 15px; margin-top: 25px;">Why back this?</h4>\n            <p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 15px;">${whyNeedIt}</p>\n\n`;
             if (howWorks) popupHTML += `            <h4 style="color: #05CE78; font-size: 1.4em; margin-bottom: 15px; margin-top: 25px;">How does it work?</h4>\n            <p style="color: #4a5568; font-size: 1.05em; line-height: 1.8; margin-bottom: 15px;">${howWorks}</p>\n\n`;
@@ -1158,3 +1279,23 @@ Keep it concise, compelling, and backer-focused. Only return the JSON, nothing e
     </script>
 </body>
 </html>
+```
+
+---
+
+## What's New - Funding Stats Display
+
+✅ **4 new fields** - Current funding, goal, backers, days remaining  
+✅ **Progress bar** - Visual funding percentage  
+✅ **Auto-calculated percentage** - Shows how close to goal  
+✅ **Appears at top of popup** - Creates urgency immediately  
+✅ **Optional** - Leave blank to hide  
+✅ **Saves automatically** - LocalStorage included  
+✅ **Works in preview & generated code**  
+
+**Example display:**
+```
+$45,231                892
+pledged of $50,000     backers
+[████████████░░] 90%
+⏰ 12 days left
